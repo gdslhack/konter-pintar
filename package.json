@@ -1,17 +1,13 @@
 {
-  "name": "konter-webapps",
+  "name": "konter-pemesanan",
   "version": "1.0.0",
-  "description": "Webapps untuk pemesanan produk konter dengan integrasi Telegram",
-  "main": "server/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "axios": "^1.3.4",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "express": "^4.17.1"
-  },
-  "engines": {
-    "node": ">=14.0.0"
   }
 }

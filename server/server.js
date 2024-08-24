@@ -9,7 +9,6 @@ app.use(express.static('public'));
 
 let productData = {};
 
-// Ambil data produk saat server pertama kali berjalan
 axios.get('https://smartinkuota.otoreport.com/harga.js.php?id=1c8c62af3b9c9988fbde1297a58c93fb2daf0a46ff0046f2eb4a667b5f6a84424c8979bda21070b31e588dcbc750420b-8')
     .then(response => {
         productData = response.data;
@@ -18,6 +17,10 @@ axios.get('https://smartinkuota.otoreport.com/harga.js.php?id=1c8c62af3b9c9988fb
     .catch(error => {
         console.error('Gagal mengambil data produk:', error);
     });
+
+app.get('/api/products', (req, res) => {
+    res.json(productData);
+});
 
 app.post('/api/order', (req, res) => {
     const { product, phoneNumber, denom } = req.body;
@@ -41,10 +44,6 @@ app.post('/api/order', (req, res) => {
         console.error('Telegram API Error:', error);
         res.status(500).json({ status: 'error', message: 'Failed to send notification.' });
     });
-});
-
-app.get('/api/products', (req, res) => {
-    res.json(productData);
 });
 
 app.listen(PORT, () => {

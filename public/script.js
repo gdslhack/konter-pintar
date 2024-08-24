@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/products')
         .then(response => response.json())
         .then(data => {
-            window.productData = data; // Simpan data produk di window untuk digunakan nanti
+            window.productData = data;
             populateProductOptions(data);
         })
         .catch(error => console.error('Error fetching products:', error));
@@ -70,8 +70,8 @@ function populateDenomOptions(productData) {
 
     productData.forEach(item => {
         const option = document.createElement('option');
-        option.value = item.denom; // Misalnya, ini adalah format denom
-        option.textContent = `${item.denom}k - Rp ${item.harga}`; // Tampilkan denom dan harga
+        option.value = item.denom;
+        option.textContent = `${item.denom}k - Rp ${item.harga}`;
         denomSelect.appendChild(option);
     });
 }

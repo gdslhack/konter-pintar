@@ -3,41 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webapps Pemesanan Produk Konter</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Konter Produk Pemesanan</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Pemesanan Produk Konter</h1>
-    
+    <h1>Konter Produk Pemesanan</h1>
     <form id="orderForm">
         <label for="product">Pilih Produk:</label>
         <select id="product" name="product" onchange="handleProductChange()">
-            <option value="pulsa">Pulsa Elektrik</option>
-            <option value="data">Paket Data</option>
-            <option value="pln">PLN</option>
-            <option value="ewallet">Ewallet</option>
+            <!-- Options akan diisi secara dinamis -->
         </select>
 
         <div id="phoneNumberInput">
-            <label for="phoneNumber">Masukkan Nomor HP:</label>
+            <label for="phoneNumber">Nomor HP:</label>
             <input type="text" id="phoneNumber" name="phoneNumber" required>
         </div>
 
         <div id="plnOptions" style="display:none;">
             <label for="denom">Pilih Denom:</label>
             <select id="denom" name="denom">
-                <option value="20">20k</option>
-                <option value="50">50k</option>
-                <option value="100">100k</option>
-                <option value="200">200k</option>
-                <option value="500">500k</option>
-                <option value="1000">1jt</option>
+                <!-- Options akan diisi secara dinamis -->
             </select>
         </div>
 
-        <button type="submit">Pesan</button>
+        <button type="submit">Pesan Sekarang</button>
     </form>
 
-    <script src="/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

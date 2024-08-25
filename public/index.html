@@ -3,31 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konter Produk Pemesanan</title>
+    <title>Konter Produk</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Konter Produk Pemesanan</h1>
-    <form id="orderForm">
-        <label for="product">Pilih Produk:</label>
-        <select id="product" name="product" onchange="handleProductChange()">
-            <!-- Options akan diisi secara dinamis -->
-        </select>
-
-        <div id="phoneNumberInput">
-            <label for="phoneNumber">Nomor HP:</label>
-            <input type="text" id="phoneNumber" name="phoneNumber" required>
-        </div>
-
-        <div id="plnOptions" style="display:none;">
-            <label for="denom">Pilih Denom:</label>
-            <select id="denom" name="denom">
-                <!-- Options akan diisi secara dinamis -->
-            </select>
-        </div>
-
-        <button type="submit">Pesan Sekarang</button>
+    <h1>Pesan Produk Konter</h1>
+    
+    <!-- Form untuk input nomor HP -->
+    <form id="filterForm">
+        <label for="phoneNumber">Masukkan Nomor HP:</label>
+        <input type="text" id="phoneNumber" name="phoneNumber" required pattern="^08\d{9,11}$" placeholder="Contoh: 08123456789">
+        <button type="submit">Filter</button>
     </form>
+
+    <!-- Tabel untuk menampilkan produk -->
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>Kode</th>
+                <th>Keterangan</th>
+                <th>Harga</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Produk akan ditampilkan di sini -->
+        </tbody>
+    </table>
 
     <script src="script.js"></script>
 </body>

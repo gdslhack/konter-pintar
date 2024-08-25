@@ -1,6 +1,9 @@
 const express = require('express');
-const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const cheerio = require('cheerio');
 const app = express();
+const port = 3000;
 
 const operatorPrefixes = {
     'Telkomsel': ['0811', '0812', '0813', '0821', '0822', '0852', '0853', '0823', '0851'],
@@ -10,49 +13,36 @@ const operatorPrefixes = {
     'Smartfren': ['0881', '0882', '0883', '0884', '0885', '0886', '0887', '0888']
 };
 
-app.get('/api/scrape', async (req, res) => {
-  try {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
 
-    // Ganti URL ini dengan URL target
-    await page.goto('https://smartinkuota.otoreport.com/harga.js.php?id=1c8c62af3b9c9988fbde1297a58c93fb2daf0a46ff0046f2eb4a667b5f6a84424c8979bda21070b31e588dcbc750420b-8', {
-      waitUntil: 'networkidle2'
-    });
-
-    const data = await page.evaluate(() => {
-      const tables = Array.from(document.querySelectorAll('table'));
-      return tables.map(table => {
-        const rows = Array.from(table.querySelectorAll('tr'));
-        return rows.map(row => {
-          const cells = Array.from(row.querySelectorAll('td, th'));
-          return cells.map(cell => cell.innerText);
-        });
-      });
-    });
-
-    // Filter data berdasarkan prefix operator
-    const filteredData = data.filter(table => {
-      return table.some(row => {
-        // Asumsi nomor telepon ada di kolom tertentu, misal kolom ke-2
-        const phoneNumber = row[1];
-        if (phoneNumber) {
-          const prefix = phoneNumber.slice(0, 4);
-          return prefixOperators.hasOwnProperty(prefix);
+app.get('/api/scrape', (req, res) => {
+    fs.readFile(path.join(__dirname, '../public/harga.js.php'), 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to read file' });
         }
-        return false;
-      });
+
+        // Load the data into cheerio
+        const $ = cheerio.load(data);
+        const products = [];
+
+        $('table.tabel tr').each((index, element) => {
+            const cells = $(element).find('td');
+            if (cells.length > 0) {
+                const product = {
+                    kode: $(cells[0]).text(),
+                    keterangan: $(cells[1]).text(),
+                    harga: $(cells[2]).text(),
+                    status: $(cells[3]).text()
+                };
+                products.push(product);
+            }
+        });
+
+        res.json(products);
     });
-
-    res.json(filteredData);
-    await browser.close();
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
-    console.log('Server is running on port 3000');
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });

@@ -1,51 +1,74 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const axios = require('axios');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use(express.static('public'));
+const operatorPrefixes = {
+    'Telkomsel': ['0811', '0812', '0813', '0821', '0822', '0852', '0853', '0823', '0851'],
+    'Indosat': ['0814', '0815', '0816', '0855', '0856', '0857', '0858'],
+    'XL': ['0817', '0818', '0819', '0859', '0877', '0878'],
+    'Tri': ['0895', '0896', '0897', '0898', '0899'],
+    'Smartfren': ['0881', '0882', '0883', '0884', '0885', '0886', '0887', '0888']
+};
 
-let productData = {};
-
-axios.get('https://smartinkuota.otoreport.com/harga.js.php?id=1c8c62af3b9c9988fbde1297a58c93fb2daf0a46ff0046f2eb4a667b5f6a84424c8979bda21070b31e588dcbc750420b-8')
-    .then(response => {
-        productData = response.data;
-        console.log('Data produk berhasil diambil:', productData);
-    })
-    .catch(error => {
-        console.error('Gagal mengambil data produk:', error);
-    });
-
-app.get('/api/products', (req, res) => {
-    res.json(productData);
-});
-
-app.post('/api/order', (req, res) => {
-    const { product, phoneNumber, denom } = req.body;
-    const orderNumber = `SIK${Math.floor(10000 + Math.random() * 90000)}`;
-
-    let message = `*PESANAN NO unik #${orderNumber}*\n\nTujuan: ${phoneNumber}\nProduk: ${product}`;
-    if (product === 'pln') {
-        message += `\nDenom: ${denom}k`;
+function getOperatorByPrefix(phoneNumber) {
+    for (const [operator, prefixes] of Object.entries(operatorPrefixes)) {
+        if (prefixes.some(prefix => phoneNumber.startsWith(prefix))) {
+            return operator;
+        }
     }
-    message += `\n\nJika sudah bayar segera proses, Trimsss`;
+    return 'Unknown Operator';
+}
 
-    axios.post(`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage`, {
-        chat_id: '<YOUR_CHAT_ID>',
-        text: message,
-        parse_mode: 'Markdown'
-    })
-    .then(response => {
-        res.json({ status: 'success', message: 'Order received and notification sent.' });
-    })
-    .catch(error => {
-        console.error('Telegram API Error:', error);
-        res.status(500).json({ status: 'error', message: 'Failed to send notification.' });
+async function fetchProductData() {
+    const response = await axios.get('https://smartinkuota.otoreport.com/harga.js.php?id=1c8c62af3b9c9988fbde1297a58c93fb2daf0a46ff0046f2eb4a667b5f6a84424c8979bda21070b31e588dcbc750420b-8');
+    const data = response.data;
+
+    // Parsing HTML to extract table data
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data, 'text/html');
+    const tables = doc.querySelectorAll('table');
+
+    const products = [];
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 0) {
+                products.push({
+                    kode: cells[0].innerText.trim(),
+                    keterangan: cells[1].innerText.trim(),
+                    harga: cells[2].innerText.trim(),
+                    status: cells[3].innerText.trim()
+                });
+            }
+        });
     });
+
+    return products;
+}
+
+async function getProductsByPhoneNumber(phoneNumber) {
+    const operator = getOperatorByPrefix(phoneNumber);
+
+    if (operator === 'Unknown Operator') {
+        console.error('Unknown Operator');
+        return [];
+    }
+
+    const products = await fetchProductData();
+    const operatorProducts = products.filter(product => {
+        return operatorPrefixes[operator].some(prefix => product.kode.startsWith(prefix));
+    });
+
+    return operatorProducts;
+}
+
+app.get('/api/products', async (req, res) => {
+    const phoneNumber = req.query.phoneNumber || '';
+    const products = await getProductsByPhoneNumber(phoneNumber);
+    res.json(products);
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });

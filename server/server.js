@@ -5,6 +5,7 @@ const cheerio = require('cheerio');
 const app = express();
 const port = 3000;
 
+// Daftar prefix operator
 const operatorPrefixes = {
     'Telkomsel': ['0811', '0812', '0813', '0821', '0822', '0852', '0853', '0823', '0851'],
     'Indosat': ['0814', '0815', '0816', '0855', '0856', '0857', '0858'],
@@ -16,13 +17,32 @@ const operatorPrefixes = {
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
-app.get('/api/scrape', (req, res) => {
+app.get('/api/products', (req, res) => {
+    const phoneNumber = req.query.phoneNumber;
+    if (!phoneNumber) {
+        return res.status(400).json({ error: 'Phone number is required' });
+    }
+
+    const prefix = phoneNumber.slice(0, 4);
+    let matchedOperator = null;
+
+    // Determine the operator based on prefix
+    for (const [operator, prefixes] of Object.entries(operatorPrefixes)) {
+        if (prefixes.includes(prefix)) {
+            matchedOperator = operator;
+            break;
+        }
+    }
+
+    if (!matchedOperator) {
+        return res.status(404).json({ error: 'Operator not found for the given prefix' });
+    }
+
     fs.readFile(path.join(__dirname, '../public/harga.js.php'), 'utf8', (err, data) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to read file' });
         }
 
-        // Load the data into cheerio
         const $ = cheerio.load(data);
         const products = [];
 
@@ -35,7 +55,10 @@ app.get('/api/scrape', (req, res) => {
                     harga: $(cells[2]).text(),
                     status: $(cells[3]).text()
                 };
-                products.push(product);
+                // Check if the product matches the operator
+                if (product.kode.startsWith(prefix)) {
+                    products.push(product);
+                }
             }
         });
 

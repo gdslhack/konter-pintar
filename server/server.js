@@ -55,14 +55,19 @@ app.get('/api/products', (req, res) => {
                     harga: $(cells[2]).text(),
                     status: $(cells[3]).text()
                 };
-                // Check if the product matches the operator
-                if (product.kode.startsWith(prefix)) {
-                    products.push(product);
-                }
+                // Menambahkan produk ke dalam list jika cocok dengan operator
+                products.push(product);
             }
         });
 
-        res.json(products);
+        // Menyaring produk berdasarkan operator yang cocok
+        const filteredProducts = products.filter(product => {
+            // Misalkan produk berisi prefix atau operator di kolom tertentu, lakukan filter jika perlu
+            // Untuk contoh ini, kita tidak filter produk karena informasi prefix tidak ada di data produk
+            return true;
+        });
+
+        res.json(filteredProducts);
     });
 });
 

@@ -2,7 +2,7 @@ document.getElementById('filterForm').addEventListener('submit', function(event)
     event.preventDefault();
     const phoneNumber = document.getElementById('phoneNumber').value;
 
-    fetch(`/api/scrape?phoneNumber=${phoneNumber}`)
+    fetch(`/api/products?phoneNumber=${phoneNumber}`)
         .then(response => response.json())
         .then(products => {
             const tbody = document.getElementById('productTable').getElementsByTagName('tbody')[0];
